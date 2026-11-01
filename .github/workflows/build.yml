@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
+          - os: macos-15-intel
             target: mac
           - os: macos-latest
             target: macArch
@@ -71,6 +71,58 @@ jobs:
             build/jpackage/*.deb
             build/jpackage/*.rpm
           if-no-files-found: warn
+
+  # The .deb must install on Debian and Ubuntu alike. jpackage would derive the 'Depends' field
+  # on the build host; the package therefore carries its own list (package/control). This job
+  # proves that list: it installs the package in a plain container of each distribution and
+  # verifies that every shared library of the installed application resolves.
+  linux-install-check:
+    name: Install check (${{ matrix.image }})
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: 'debian:trixie'
+          - image: 'ubuntu:24.04'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: autumo-ui-fx-demo-linux
+          path: pkg
+
+      - name: Install in ${{ matrix.image }} and verify libraries
+        shell: bash
+        run: |
+          cat > check.sh <<'EOF'
+          set -euo pipefail
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends ./pkg/*.deb
+          # Install directory as recorded by dpkg, so a renamed package cannot make this vacuous.
+          app=$(dpkg -L autumo-ui-fx-demo | awk -F/ '/^\/opt\// {print "/" $2 "/" $3}' | sort -u | head -n 1)
+          if [ -z "$app" ] || [ ! -d "$app" ]; then
+            echo "::error::Application directory not found in the installed package"
+            exit 1
+          fi
+          echo "Application directory: $app ($(find "$app" -type f | wc -l) files)"
+          status=0
+          while IFS= read -r file; do
+            if ldd "$file" 2>/dev/null | grep -q 'not found'; then
+              echo "::error::Unresolved libraries for $file"
+              ldd "$file" | grep 'not found'
+              status=1
+            fi
+          done < <(find "$app" -type f \( -name '*.so' -o -name '*.so.*' -o -perm -u+x \))
+          if [ "$status" -ne 0 ]; then
+            echo "The Depends list in package/control is incomplete."
+            exit 1
+          fi
+          echo "All shared libraries resolve."
+          EOF
+          docker run --rm -v "$PWD/pkg:/pkg:ro" -v "$PWD/check.sh:/check.sh:ro" \
+            "${{ matrix.image }}" bash /check.sh
 
   release:
     name: Create GitHub Release

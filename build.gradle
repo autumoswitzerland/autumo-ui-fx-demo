@@ -214,6 +214,13 @@ runtime {
             installerOptions += ['--name', 'autumo-UI-FX-Demo']
             installerOptions += ['--linux-app-category', 'Development']
             installerOptions += ['--linux-deb-maintainer', 'info@autumo.ch']
+            // 'package/control' (in the resource directory) overrides the 'Depends' field that
+            // jpackage would derive on its own: jpackage runs 'ldd' over the app image and asks
+            // the build host's package database ('dpkg -S') for the providing packages. That
+            // yields build-host package names (e.g. 'libglycin-2-0' from a recent Ubuntu), which
+            // do not exist on Debian and make the package uninstallable. The custom control file
+            // therefore lists the runtime libraries explicitly, with 'a | b' alternatives for
+            // the packages whose names differ between Debian and Ubuntu.
         }
 
         if (installerType == 'pkg') {
