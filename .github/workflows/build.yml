@@ -128,12 +128,22 @@ jobs:
             echo "::error::Application directory not found in the installed package"
             exit 1
           fi
+          # The bundled libraries reference each other (e.g. libawt.so -> libjvm.so, and
+          # libfxplugins.so -> libgstreamer-lite.so), so every directory of the application that
+          # contains libraries must be on the library path.
+          libdirs=$(find "$app" -type f \( -name '*.so' -o -name '*.so.*' \) -exec dirname {} + | sort -u | paste -sd:)
           echo "Application directory: $app ($(find "$app" -type f | wc -l) files)"
+          echo "Library path: $libdirs"
           status=0
           while IFS= read -r file; do
-            if ldd "$file" 2>/dev/null | grep -q 'not found'; then
+            case "$file" in
+              # Optional JavaFX codec adapters: JavaFX picks the adapter matching the system's
+              # libavcodec at runtime via dlopen. Absent system codecs are no install error.
+              */libavplugin-*) continue ;;
+            esac
+            if LD_LIBRARY_PATH="$libdirs" ldd "$file" 2>/dev/null | grep -q 'not found'; then
               echo "::error::Unresolved libraries for $file"
-              ldd "$file" | grep 'not found'
+              LD_LIBRARY_PATH="$libdirs" ldd "$file" | grep 'not found'
               status=1
             fi
           done < <(find "$app" -type f \( -name '*.so' -o -name '*.so.*' -o -perm -u+x \))
@@ -141,7 +151,7 @@ jobs:
             echo "The Depends list in package/control is incomplete."
             exit 1
           fi
-          echo "All shared libraries resolve."
+          echo "All required shared libraries resolve."
           EOF
           docker run --rm -v "$PWD/pkg:/pkg:ro" -v "$PWD/check.sh:/check.sh:ro" \
             "${{ matrix.image }}" bash /check.sh

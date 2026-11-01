@@ -164,7 +164,8 @@ runtime {
 
         targetPlatformName = (project.findProperty('targetPlatform') ?: 'mac').toString()
         imageName = 'autumo UI FX Demo'
-        jvmArgs = ['-Djdk.gtk.version=2']
+        // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
+        // JavaFX 25 dropped GTK 2 and only printed a warning about it.
         // The packaging resources (license texts for the installers) live in the root project's
         // 'package/' directory - NOT in the 'ui' module, so rootProject.file() must be used here:
         // file('package/') would resolve to 'ui/package', which does not exist.
