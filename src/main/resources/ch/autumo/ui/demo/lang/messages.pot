@@ -1,0 +1,62 @@
+# gettext message catalogue of the autumo-ui-demo application (app-specific texts only).
+# Framework texts are resolved from the autumo-ui framework catalogue.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: autumo-ui-fx-demo 1.2.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pot\n"
+
+
+msgid "Tools"
+msgstr ""
+
+msgid "Tools.jsonFormatter"
+msgstr ""
+
+msgid "Tools.confirmAlert"
+msgstr ""
+
+msgid "Tools.infoAlert"
+msgstr ""
+
+msgid "Tools.warningAlert"
+msgstr ""
+
+msgid "Tools.errorAlert"
+msgstr ""
+
+msgid "Tools.exceptionAlert1"
+msgstr ""
+
+msgid "Tools.exceptionAlert2"
+msgstr ""
+
+msgid "Tools.exceptionAlert3"
+msgstr ""
+
+msgid "Alert.confirmation.text"
+msgstr ""
+
+msgid "Alert.information.text"
+msgstr ""
+
+msgid "Alert.warning.text"
+msgstr ""
+
+msgid "Alert.error.text"
+msgstr ""
+
+msgid "Alert.exception.text"
+msgstr ""
+
+msgid "Alert.exception.title"
+msgstr ""
+
+msgid "application.name"
+msgstr ""
+
+msgid "About.title"
+msgstr ""

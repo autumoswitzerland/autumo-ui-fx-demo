@@ -1,0 +1,225 @@
+/**
+ *
+ * JavaFX build-script for autumo UI FX Demo.
+ * Version: 1.0
+ *
+ * 2026 autumo GmbH
+ * Date: 31.10.2026
+ *
+ */
+
+plugins {
+    id 'eclipse'
+    id 'com.gradleup.shadow' version '9.6.1'
+    id 'org.beryx.runtime' version '2.0.1'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+javafx {
+    version = "25"
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ]
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+        // Azul Zulu is the JDK of choice; the foojay resolver (settings.gradle)
+        // auto-provisions a Zulu JDK when no local Zulu 25 is found.
+        vendor = JvmVendorSpec.AZUL
+	}
+}
+
+eclipse {
+    project {
+        name = 'autumo-ui-fx-demo'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+jar {
+    version = '1.2.0'
+}
+
+// Standalone fat jar: excludes the JavaFX/JDK classes the packaged runtime provides.
+shadowJar {
+    exclude 'javax/**'
+    exclude 'javafx/**'
+    exclude 'com/sun/**'
+    exclude '*.dylib'
+}
+
+repositories {
+	mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+	implementation "org.openjfx:javafx-controls:25"
+	implementation "org.openjfx:javafx-fxml:25"
+	implementation "org.openjfx:javafx-web:25"
+	implementation "org.openjfx:javafx-swing:25"
+	
+    implementation "ch.autumo.commons:autumo-ui-fx:1.2.0"
+
+	implementation "net.synedra:validatorfx:1.0.0"
+	
+	implementation "org.apache.logging.log4j:log4j-api:2.26.1"
+	implementation "org.apache.logging.log4j:log4j-core:2.26.1"
+	implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1"
+
+	implementation 'org.apache.commons:commons-lang3:3.21.0'
+    implementation 'com.google.code.gson:gson:2.11.0'
+}
+
+application {
+    mainClass = 'ch.autumo.ui.demo.App'
+}
+
+tasks.named('run') {
+    jvmArgs '--enable-native-access=javafx.graphics'
+}
+
+// Standalone fat jar: excludes the JavaFX/JDK classes the packaged runtime provides.
+shadowJar {
+    exclude 'javax/**'
+    exclude 'javafx/**'
+    exclude 'com/sun/**'
+    exclude '*.dylib'
+}
+
+def runtimeJdk = 'zulu25.36.205-ca-fx-jdk25.0.4.1'
+
+def jdkHomeFor(String path) {
+    return providers.provider {
+        new File(path).exists() ? path : System.getProperty('java.home')
+    }
+}
+
+runtime {
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing']
+
+    // jpackage accepts one to three dot-separated integers as the application version, so the
+    // development version's '-SNAPSHOT' qualifier (3.0.0-SNAPSHOT) is stripped for the installer.
+    // The project version itself stays untouched.
+    def installerVersion = project.version.toString().replaceFirst(/(?i)-.*$/, '')
+
+    jpackage {
+        options = [
+            '--strip-debug',
+            // 'zip-6' replaces the deprecated numeric '--compress 2' (JDK 21+).
+            '--compress', 'zip-6',
+            '--no-header-files',
+            '--no-man-pages'
+        ]
+
+        // The plugin derives --app-version from project.version (3.0.0-SNAPSHOT), which jpackage
+        // rejects. Override it with the sanitized, numeric installer version (see above).
+        appVersion = installerVersion
+
+        targetPlatformName = 'mac'
+        imageName = 'autumo UI FX Demo'
+        jvmArgs = ['-Djdk.gtk.version=2']
+        // The packaging resources (license texts for the installers) live in the root project's
+        // 'package/' directory - NOT in the 'ui' module, so rootProject.file() must be used here:
+        // file('package/') would resolve to 'ui/package', which does not exist.
+        resourceDir = rootProject.file('package')
+
+        installerOptions = [
+            '--description', 'autumo UI FX Demo',
+            '--copyright', 'Copyright 2026 autumo GmbH',
+            '--vendor', 'autumo GmbH'
+        ]
+
+        if (targetPlatformName == 'macArch') {
+            targetPlatform('macArch') {
+                jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
+                        runtimeJdk + '-macosx_aarch64/Contents/Home')
+            }
+            installerType = 'pkg'
+            installerOptions += ['--name', 'autumo-UI-FX-Demo-arm64']
+            installerOptions += ['--mac-app-category', 'Development']
+        }
+
+        if (targetPlatformName == 'mac') {
+            targetPlatform('mac') {
+                jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
+                        runtimeJdk + '-macosx_x64/Contents/Home')
+            }
+            installerType = 'pkg'
+            installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
+            installerOptions += ['--mac-app-category', 'Development']
+        }
+
+        if (targetPlatformName == 'win') {
+            targetPlatform('win') {
+                jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
+            }
+            installerType = 'exe'
+            installerOptions += ['--name', 'autumo-UI-FX-Demo']
+        }
+
+        if (targetPlatformName == 'linux') {
+            targetPlatform('linux') {
+                jdkHome = jdkHomeFor('/opt/java/' + runtimeJdk + '-linux_amd64')
+            }
+            installerType = 'deb'
+            installerOptions += ['--name', 'autumo-UI-FX-Demo']
+            installerOptions += ['--linux-app-category', 'Development']
+            installerOptions += ['--linux-deb-maintainer', 'info@autumo.ch']
+        }
+
+        if (installerType == 'pkg') {
+            imageOptions += ['--icon', 'src/main/resources/icon.icns']
+            // Bundle identifier of the application itself (Info.plist), not of the installer.
+            imageOptions += ['--mac-package-identifier', 'ch.autumo.ui.demo']
+        }
+
+        if (installerType == 'exe') {
+            imageOptions += ['--icon', 'src/main/resources/icon.ico']
+            // Bundle identifier of the application itself (Info.plist), not of the installer.
+            imageOptions += ['--mac-package-identifier', 'ch.autumo.ui.demo']
+            installerOptions += [
+                '--win-dir-chooser',
+                '--win-menu',
+                '--win-shortcut'
+            ]
+        }
+
+        if (installerType in ['deb', 'rpm']) {
+            imageOptions += ['--icon', 'src/main/resources/icon_256x256.png']
+            installerOptions += [
+                '--resource-dir', 'build/jpackage/autumo UI FX Demo/lib',
+                '--license-file', rootProject.file('LICENSE').absolutePath,
+                '--linux-menu-group', 'Utility',
+                '--linux-shortcut'
+            ]
+        }
+
+        if (installerType == 'deb') {
+            installerOptions += [
+                '--linux-deb-maintainer', 'info@autumo.ch'
+            ]
+        }
+
+        if (installerType == 'rpm') {
+            installerOptions += [
+                '--linux-rpm-license-type', 'GPLv3'
+            ]
+        }
+    }
+}
+
+// ':ui:jpackageImage' consumes the jlink image that ':ui:runtime' produces (build/jre). Gradle 9
+// rejects that as an implicit dependency, so declare it explicitly.
+tasks.named('jpackageImage') {
+    dependsOn tasks.named('runtime')
+}

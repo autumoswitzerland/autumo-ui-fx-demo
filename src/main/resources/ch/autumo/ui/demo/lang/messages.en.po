@@ -1,0 +1,62 @@
+# gettext message catalogue of the autumo-ui-demo application (app-specific texts only).
+# Framework texts are resolved from the autumo-ui framework catalogue.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: autumo-ui-fx-demo 1.2.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+
+msgid "Tools"
+msgstr "Tools"
+
+msgid "Tools.jsonFormatter"
+msgstr "JSON Formatter"
+
+msgid "Tools.confirmAlert"
+msgstr "Confirmation Alert"
+
+msgid "Tools.infoAlert"
+msgstr "Information Alert"
+
+msgid "Tools.warningAlert"
+msgstr "Warning Alert"
+
+msgid "Tools.errorAlert"
+msgstr "Error Alert"
+
+msgid "Tools.exceptionAlert1"
+msgstr "Exception Alert 1"
+
+msgid "Tools.exceptionAlert2"
+msgstr "Exception Alert 2"
+
+msgid "Tools.exceptionAlert3"
+msgstr "Exception Alert 3"
+
+msgid "Alert.confirmation.text"
+msgstr "Are you sure you want to continue? (demo)"
+
+msgid "Alert.information.text"
+msgstr "This is an information message (demo).\n<b>Bold text</b> and <i>italic text</i>.\nA line break, then a <font color=\"#ff5555\">coloured</font> word."
+
+msgid "Alert.warning.text"
+msgstr "This is a warning message (demo)."
+
+msgid "Alert.error.text"
+msgstr "Example error for demonstration purposes."
+
+msgid "Alert.exception.text"
+msgstr "Example exception for demonstration purposes."
+
+msgid "Alert.exception.title"
+msgstr "Example Exception"
+
+msgid "application.name"
+msgstr "autumo UI FX Demo"
+
+msgid "About.title"
+msgstr "About autumo UI FX Demo"

@@ -1,0 +1,62 @@
+# gettext message catalogue of the autumo-ui-demo application (app-specific texts only).
+# Framework texts are resolved from the autumo-ui framework catalogue.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: autumo-ui-fx-demo 1.2.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+
+
+msgid "Tools"
+msgstr "Werkzeuge"
+
+msgid "Tools.jsonFormatter"
+msgstr "JSON-Formatierer"
+
+msgid "Tools.confirmAlert"
+msgstr "Bestätigungs-Dialog"
+
+msgid "Tools.infoAlert"
+msgstr "Informations-Dialog"
+
+msgid "Tools.warningAlert"
+msgstr "Warnungs-Dialog"
+
+msgid "Tools.errorAlert"
+msgstr "Fehler-Dialog"
+
+msgid "Tools.exceptionAlert1"
+msgstr "Ausnahme-Dialog 1"
+
+msgid "Tools.exceptionAlert2"
+msgstr "Ausnahme-Dialog 2"
+
+msgid "Tools.exceptionAlert3"
+msgstr "Ausnahme-Dialog 3"
+
+msgid "Alert.confirmation.text"
+msgstr "Willst du wirklich fortfahren? (Demo)"
+
+msgid "Alert.information.text"
+msgstr "Dies ist eine Informationsmeldung (Demo).\n<b>Fetter Text</b> und <i>kursiver Text</i>.\nEin Zeilenumbruch, danach ein <font color=\"#ff5555\">eingefärbtes</font> Wort."
+
+msgid "Alert.warning.text"
+msgstr "Dies ist eine Warnmeldung (Demo)."
+
+msgid "Alert.error.text"
+msgstr "Beispiel-Fehler zu Demonstrationszwecken."
+
+msgid "Alert.exception.text"
+msgstr "Beispiel-Ausnahme zu Demonstrationszwecken."
+
+msgid "Alert.exception.title"
+msgstr "Beispiel-Ausnahme 1"
+
+msgid "application.name"
+msgstr "autumo UI FX Demo"
+
+msgid "About.title"
+msgstr "Über autumo UI FX Demo"

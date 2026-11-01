@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.effect.GaussianBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<fx:root minHeight="720.0" minWidth="1080.0" prefHeight="720.0" prefWidth="1080.0" styleClass="default" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <AnchorPane prefHeight="83.0" prefWidth="1080.0" BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar fx:id="menuBar" layoutX="1.0" maxWidth="1.7976931348623157E308" prefHeight="125.0" prefWidth="1080.0" styleClass="menu-bar" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <menus>
+                <Menu mnemonicParsing="false" styleClass="menu" text="%menu.File">
+                  <items>
+                    <MenuItem fx:id="menuItemOpen" mnemonicParsing="false" onAction="#open" styleClass="menu" text="%menu.Open">
+                      <accelerator>
+                         <KeyCodeCombination alt="UP" code="O" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
+                      </accelerator>
+                    </MenuItem>
+                    <Menu fx:id="menuItemRecent" mnemonicParsing="false" onAction="#recent" styleClass="menu" text="%menu.Recent" />
+                    <SeparatorMenuItem mnemonicParsing="false" />
+                    <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" onAction="#quit" styleClass="menu" text="%menu.Quit">
+                      <accelerator>
+                        <KeyCodeCombination alt="UP" code="X" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
+                      </accelerator>
+                    </MenuItem>
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="%menu.Config">
+                    <items>
+                      <MenuItem fx:id="menuItemRemove" mnemonicParsing="false" onAction="#removeApp" styleClass="menu" text="%menu.Remove">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="R" control="UP" meta="DOWN" shift="DOWN" shortcut="UP" />
+                           </accelerator></MenuItem>
+                    </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="%menu.Reg">
+                     <items>
+                        <MenuItem fx:id="menuItemRegister" mnemonicParsing="false" onAction="#register" styleClass="menu" text="%menu.Register">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="R" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
+                           </accelerator>
+                        </MenuItem>
+                     </items>
+                  </Menu>
+                <Menu mnemonicParsing="false" styleClass="menu" text="%Tools">
+                    <items>
+                        <MenuItem fx:id="menuItemJsonFormatter" mnemonicParsing="false" onAction="#openJsonFormatter" styleClass="menu" text="%Tools.jsonFormatter" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="menuItemConfirmAlert" mnemonicParsing="false" onAction="#openConfirmAlert" styleClass="menu" text="%Tools.confirmAlert" />
+                        <MenuItem fx:id="menuItemInfoAlert" mnemonicParsing="false" onAction="#openInfoAlert" styleClass="menu" text="%Tools.infoAlert" />
+                        <MenuItem fx:id="menuItemWarningAlert" mnemonicParsing="false" onAction="#openWarningAlert" styleClass="menu" text="%Tools.warningAlert" />
+                        <MenuItem fx:id="menuItemErrorAlert" mnemonicParsing="false" onAction="#openErrorAlert" styleClass="menu" text="%Tools.errorAlert" />
+                        <MenuItem fx:id="menuItemErrorException" mnemonicParsing="false" onAction="#openErrorException" styleClass="menu" text="%Tools.exceptionAlert1" />
+                        <MenuItem fx:id="menuItemExampleException" mnemonicParsing="false" onAction="#openExampleException" styleClass="menu" text="%Tools.exceptionAlert2" />
+                        <MenuItem fx:id="menuItemExampleException2" mnemonicParsing="false" onAction="#openExampleException2" styleClass="menu" text="%Tools.exceptionAlert3" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" styleClass="menu" text="%menu.Help">
+                  <items>
+                    <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" onAction="#about" styleClass="menu" text="%menu.About">
+                      <accelerator>
+                         <KeyCodeCombination alt="UP" code="I" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
+                      </accelerator>
+                    </MenuItem>
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <BorderPane fx:id="toolBar" layoutY="34.0" maxWidth="1.7976931348623157E308" prefHeight="96.0" prefWidth="1400.0" styleClass="tool-bar-pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0">
+               <right>
+                  <ToolBar maxWidth="-Infinity" prefHeight="84.0" prefWidth="632.0" style="-fx-background-color: transparent;" styleClass="right-tool-bar" BorderPane.alignment="CENTER">
+                     <items>
+                        <Pane prefHeight="73.0" prefWidth="616.0">
+                           <children>
+                              <Button fx:id="menuButtonAutumo" layoutX="4" layoutY="-6.0" mnemonicParsing="false" onAction="#openDocWebsite" prefHeight="76.0" prefWidth="544.0" styleClass="toolbar-button-no-hover">
+                                 <graphic>
+                                    <ImageView fitHeight="51.0" fitWidth="526.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/autumo-ui-demo.png" />
+                                       </image>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </ImageView>
+                                 </graphic>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                              </Button>
+                              <Button fx:id="menuButtonInfo" alignment="CENTER_RIGHT" contentDisplay="BOTTOM" graphicTextGap="0.0" layoutX="548.0" layoutY="-6.0" mnemonicParsing="false" onAction="#about" prefHeight="84.0" prefWidth="62.0" styleClass="toolbar-button" text="Info" textAlignment="CENTER" textFill="WHITE">
+                                 <graphic>
+                                    <ImageView fitHeight="75.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../icons/autumo48.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <font>
+                                    <Font name="Inter" size="11.0" />
+                                 </font>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </Button>
+                           </children>
+                        </Pane>
+                     </items>
+                  </ToolBar>
+               </right>
+               <left>
+                  <ToolBar prefHeight="91.0" prefWidth="100.0" style="-fx-background-color: transparent;" styleClass="left-tool-bar" BorderPane.alignment="CENTER">
+                     <items>
+                        <Button id="openButton" fx:id="openButton" alignment="CENTER_RIGHT" contentDisplay="BOTTOM" graphicTextGap="4.0" mnemonicParsing="false" onAction="#open" prefHeight="84.0" prefWidth="62.0" styleClass="toolbar-button" text="%button.Open" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="Inter" size="11.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                        </Button>
+                     </items></ToolBar>
+               </left>
+            </BorderPane>
+         </children>
+      </AnchorPane>
+   </top>
+   <bottom>
+      <BorderPane styleClass="footer" prefHeight="17.0" prefWidth="1080.0" BorderPane.alignment="CENTER">
+         <left>
+            <ToolBar prefHeight="40.0" BorderPane.alignment="CENTER">
+              <items>
+                  <Label fx:id="status0" focusTraversable="false" graphicTextGap="0.0" styleClass="status0" text="%base.status0" textFill="#888888">
+                     <font>
+                        <Font name="Inter SemiBold" size="13.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="status1" focusTraversable="false" graphicTextGap="0.0" styleClass="status1" text="%base.status1" textFill="#888888">
+                     <font>
+                        <Font name="Inter SemiBold" size="13.0" />
+                     </font>
+                  </Label>
+              </items>
+            </ToolBar>
+         </left>
+         <center>
+            <ToolBar maxWidth="1.7976931348623157E308" prefHeight="40.0" BorderPane.alignment="CENTER" />
+         </center>
+         <right>
+            <ToolBar prefHeight="40.0" BorderPane.alignment="CENTER" />
+         </right>
+      </BorderPane>
+   </bottom>
+   <center>
+	<Pane fx:id="mainPane" prefHeight="566.0" prefWidth="1080.0" style="-fx-background-color: #000000;">
+	   <children>
+	      <ImageView fitHeight="830.0" fitWidth="1223.0" layoutX="-70.0" opacity="0.45" pickOnBounds="true" preserveRatio="true">
+	         <image>
+	            <Image url="@../images/space1.jpg" />
+	         </image>
+	      </ImageView>
+	      <Pane fx:id="starPane" disable="true" maxHeight="566.0" maxWidth="1080.0" prefHeight="566.0" prefWidth="1080.0" styleClass="star-pane" stylesheets="@../style/star.css">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets></Pane>
+	      <Circle layoutX="540.0" layoutY="287.0" radius="210.0" stroke="BLACK" strokeType="INSIDE">
+	         <effect>
+	            <GaussianBlur radius="19.0" />
+	         </effect>
+	      </Circle>
+	      <ImageView fitHeight="339.0" fitWidth="454.0" layoutX="313.0" layoutY="52.0" opacity="0.9" pickOnBounds="true" preserveRatio="true">
+	         <image>
+	            <Image url="@../images/europa-moon-login.png" />
+	         </image>
+	      </ImageView>
+	      <Label alignment="CENTER" layoutY="364.0" prefHeight="61.0" prefWidth="1080.0" text="Software built to excel" textFill="WHITE">
+	         <font>
+	            <Font name="Inter SemiBold" size="48.0" />
+	         </font>
+	      </Label>
+	      <Label alignment="CENTER" layoutY="424.0" prefHeight="23.0" prefWidth="1080.0" text="a u t u m o   e n t e r p r i s e   p r o d u c t s" textAlignment="CENTER" textFill="WHITE">
+	         <font>
+	            <Font name="Inter" size="18.0" />
+	         </font>
+	      </Label>
+	      <ImageView fitHeight="286.0" fitWidth="280.0" layoutX="410.0" layoutY="106.0" pickOnBounds="true" preserveRatio="true">
+	         <image>
+	            <Image url="@../icons/icon_256x256.png" />
+	         </image>
+	      </ImageView>
+	   </children>
+	</Pane>
+   </center>
+</fx:root>
