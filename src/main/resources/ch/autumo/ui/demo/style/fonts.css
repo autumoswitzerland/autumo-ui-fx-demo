@@ -12,10 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+**/
 
 
 @font-face {
-    font-family: Aileron-Bold;
-    src: url('../fonts/Inter-Regular.ttf');
+	font-family: 'Inter';
+	src: url('../fonts/Inter-Regular.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Inter';
+	src: url('../fonts/Inter-Bold.ttf') format('truetype');
+	font-weight: bold;
+	font-style: normal;
 }

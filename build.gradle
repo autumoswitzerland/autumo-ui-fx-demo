@@ -58,6 +58,9 @@ shadowJar {
 }
 
 repositories {
+    // Vendored framework (autumo-ui-fx is not published to Maven Central):
+    // the jar + its Gradle module metadata live in lib/ (maven layout).
+    maven { url = uri("$rootDir/lib") }
 	mavenLocal()
     mavenCentral()
 }
@@ -125,7 +128,7 @@ runtime {
         // rejects. Override it with the sanitized, numeric installer version (see above).
         appVersion = installerVersion
 
-        targetPlatformName = 'mac'
+        targetPlatformName = (project.findProperty('targetPlatform') ?: 'mac').toString()
         imageName = 'autumo UI FX Demo'
         jvmArgs = ['-Djdk.gtk.version=2']
         // The packaging resources (license texts for the installers) live in the root project's

@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            target: mac
+          - os: macos-latest
+            target: macArch
+          - os: windows-latest
+            target: win
+          - os: ubuntu-latest
+            target: linux
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java (Azul Zulu 25 + JavaFX)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '25+fx'
+
+      - name: Verify JDK
+        shell: bash
+        run: |
+          java -version
+          echo "JAVA_HOME=$JAVA_HOME"
+
+      - name: Install WiX Toolset (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install wixtoolset -y
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build installer
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew jpackage -PtargetPlatform=${{ matrix.target }} --no-daemon
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: autumo-ui-fx-demo-${{ matrix.target }}
+          path: |
+            build/jpackage/*.pkg
+            build/jpackage/*.dmg
+            build/jpackage/*.exe
+            build/jpackage/*.deb
+            build/jpackage/*.rpm
+          if-no-files-found: warn
