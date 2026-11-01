@@ -101,9 +101,20 @@ shadowJar {
 
 def runtimeJdk = 'zulu25.36.205-ca-fx-jdk25.0.4.1'
 
+// Returns the configured local JDK if it exists (developer machines) and otherwise the JDK of
+// the Java toolchain. The toolchain JDK is also the one whose jlink creates the runtime image,
+// so both sides always share the same java.base version. Falling back to java.home is wrong:
+// the JVM that runs Gradle may be a different major version than the toolchain, which makes
+// jlink fail with "jlink version X does not match target java.base version Y".
 def jdkHomeFor(String path) {
     return providers.provider {
-        new File(path).exists() ? path : System.getProperty('java.home')
+        if (new File(path).exists()) {
+            return path
+        }
+        return javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(25)
+            vendor = JvmVendorSpec.AZUL
+        }.get().metadata.installationPath.asFile.absolutePath
     }
 }
 
