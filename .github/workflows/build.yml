@@ -116,6 +116,11 @@ jobs:
           cat > check.sh <<'EOF'
           set -euo pipefail
           apt-get update -qq
+          # A bare container has none of the XDG directories that every desktop system provides.
+          # jpackage's postinst calls 'xdg-desktop-menu' and 'xdg-icon-resource', which require a
+          # writable system menu directory and a writable system icon directory and abort the
+          # package configuration otherwise (exit code 3).
+          mkdir -p /usr/share/applications /usr/share/desktop-directories /usr/share/icons
           apt-get install -y -qq --no-install-recommends ./pkg/*.deb
           # Install directory as recorded by dpkg, so a renamed package cannot make this vacuous.
           app=$(dpkg -L autumo-ui-fx-demo | awk -F/ '/^\/opt\// {print "/" $2 "/" $3}' | sort -u | head -n 1)
