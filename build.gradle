@@ -251,8 +251,11 @@ runtime {
 
 // ':ui:jpackageImage' consumes the jlink image that ':ui:runtime' produces (build/jre). Gradle 9
 // rejects that as an implicit dependency, so declare it explicitly.
+// The generated WiX resources must exist as well: 'resourceDir' is a declared input of
+// ':jpackageImage' (and of ':jpackage').
 tasks.named('jpackageImage') {
     dependsOn tasks.named('runtime')
+    dependsOn prepareWixResources
 }
 
 // ':jpackage' reads 'main.wxs' from the resource directory, so the generated copy must exist
