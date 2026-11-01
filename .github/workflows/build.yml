@@ -60,6 +60,23 @@ jobs:
           chmod +x gradlew
           ./gradlew jpackage -PtargetPlatform=${{ matrix.target }} --no-daemon
 
+      - name: Verify Debian dependencies (Linux)
+        if: matrix.target == 'linux'
+        shell: bash
+        run: |
+          # The package must carry the Depends line from package/control, not one derived from
+          # the build host's package database.
+          expected=$(grep -m1 '^Depends:' package/control)
+          for deb in build/jpackage/*.deb; do
+            echo "== $deb"
+            actual="Depends: $(dpkg-deb -f "$deb" Depends)"
+            echo "$actual"
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::$deb does not carry the Depends line of package/control"
+              exit 1
+            fi
+          done
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

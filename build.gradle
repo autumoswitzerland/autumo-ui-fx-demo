@@ -207,6 +207,14 @@ runtime {
         }
 
         if (targetPlatformName == 'linux') {
+            // jpackage silently derives 'Depends' from the build host when the custom control
+            // file is missing, which produces a package that cannot be installed on other
+            // distributions. Fail here instead of shipping such a package.
+            if (!rootProject.file('package/control').isFile()) {
+                throw new GradleException("package/control is missing. Without it jpackage derives " +
+                        "the Debian 'Depends' field from the build host and the package becomes " +
+                        "uninstallable on Debian/Ubuntu systems with other package names.")
+            }
             targetPlatform('linux') {
                 jdkHome = jdkHomeFor('/opt/java/' + runtimeJdk + '-linux_amd64')
             }
@@ -269,4 +277,60 @@ tasks.named('jpackageImage') {
 // before the installer is built.
 tasks.named('jpackage') {
     dependsOn prepareWixResources
+}
+
+// The 'Depends' field of the .deb must be identical on every build host. jpackage derives it
+// from the build machine ('ldd' + 'dpkg -S'), which yields package names that exist only on the
+// build host's distribution (e.g. 'libglycin-2-0' from a recent Ubuntu). The custom template
+// 'package/control' (picked up from the resource directory) did not take effect on the build
+// runner, so the field is set explicitly on the built package. 'package/control' stays the single
+// source of truth; if jpackage ever honours it, the values already match and nothing changes.
+def patchDebianDependencies = tasks.register('patchDebianDependencies') {
+    def debDir = layout.buildDirectory.dir('jpackage')
+    def controlFile = rootProject.file('package/control')
+    def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
+    outputs.upToDateWhen { false }
+    onlyIf {
+        // Only after a successful installer build, and only where jpackage can build a .deb.
+        isLinux && tasks.named('jpackage').get().state.failure == null
+    }
+    doLast {
+        if (!controlFile.isFile()) {
+            throw new GradleException("package/control is missing.")
+        }
+        String depends = controlFile.readLines('UTF-8').find { it.startsWith('Depends:') }
+        if (!depends) {
+            throw new GradleException("package/control has no 'Depends:' line.")
+        }
+        List<File> debs = (debDir.get().asFile.listFiles() ?: []).findAll { it.name.endsWith('.deb') }
+        debs.each { File deb ->
+            File work = new File(temporaryDir, deb.name).tap { deleteDir(); mkdirs() }
+            runTool(['dpkg-deb', '-R', deb.absolutePath, work.absolutePath])
+            File control = new File(work, 'DEBIAN/control')
+            List<String> lines = control.readLines('UTF-8')
+            int index = lines.findIndexOf { it.startsWith('Depends:') }
+            if (index < 0) {
+                lines << depends
+            } else if (lines[index] != depends) {
+                logger.lifecycle("Replacing build-host dependencies in ${deb.name}")
+                logger.lifecycle("  was: ${lines[index]}")
+                lines[index] = depends
+                logger.lifecycle("  now: ${depends}")
+            }
+            control.setText(lines.join('\n') + '\n', 'UTF-8')
+            runTool(['dpkg-deb', '--root-owner-group', '-b', work.absolutePath, deb.absolutePath])
+        }
+    }
+}
+
+tasks.named('jpackage') {
+    finalizedBy patchDebianDependencies
+}
+
+void runTool(List<String> command) {
+    Process process = new ProcessBuilder(command).redirectErrorStream(true).start()
+    String output = process.inputStream.text
+    if (process.waitFor() != 0) {
+        throw new GradleException("Command failed: ${command.join(' ')}\n${output}")
+    }
 }
