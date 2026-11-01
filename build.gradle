@@ -251,7 +251,7 @@ runtime {
             imageOptions += ['--icon', 'src/main/resources/icon_256x256.png']
             installerOptions += [
                 '--resource-dir', 'build/jpackage/autumo UI FX Demo/lib',
-                '--license-file', rootProject.file('LICENSE.md').absolutePath,
+                '--license-file', 'package/LICENSE.txt',
                 '--linux-menu-group', 'Utility',
                 '--linux-shortcut'
             ]

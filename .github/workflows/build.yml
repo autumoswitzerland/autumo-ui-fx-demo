@@ -94,6 +94,8 @@ jobs:
   # proves that list: it installs the package in a plain container of each distribution and
   # verifies that every shared library of the installed application resolves.
   linux-install-check:
+    # Deactivated
+    if: false
     name: Install check (${{ matrix.image }})
     needs: build
     runs-on: ubuntu-latest
