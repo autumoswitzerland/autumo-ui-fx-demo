@@ -3,10 +3,7 @@
 </p>
 
 <h1 align="center" style="font-size: 3.5em; margin: 0">autumo UI FX</h1>
-
 <br />
-
----
 
 ## autumo UI FX Demo
 
