@@ -199,8 +199,6 @@ runtime {
 
         if (installerType == 'exe') {
             imageOptions += ['--icon', 'src/main/resources/icon.ico']
-            // Bundle identifier of the application itself (Info.plist), not of the installer.
-            imageOptions += ['--mac-package-identifier', 'ch.autumo.ui.demo']
             installerOptions += [
                 '--win-dir-chooser',
                 '--win-menu',
@@ -212,15 +210,9 @@ runtime {
             imageOptions += ['--icon', 'src/main/resources/icon_256x256.png']
             installerOptions += [
                 '--resource-dir', 'build/jpackage/autumo UI FX Demo/lib',
-                '--license-file', rootProject.file('LICENSE').absolutePath,
+                '--license-file', rootProject.file('LICENSE.md').absolutePath,
                 '--linux-menu-group', 'Utility',
                 '--linux-shortcut'
-            ]
-        }
-
-        if (installerType == 'deb') {
-            installerOptions += [
-                '--linux-deb-maintainer', 'info@autumo.ch'
             ]
         }
 
