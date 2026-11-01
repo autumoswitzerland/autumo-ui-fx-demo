@@ -118,6 +118,29 @@ def jdkHomeFor(String path) {
     }
 }
 
+// jpackage copies only a fixed set of files into the temporary WiX config directory it uses as
+// WiX base path ('light.exe -b <configDir>'): main.wxs, overrides.wxi, msica.dll, the *.wxl
+// files and its own dialog sources. Everything else from '--resource-dir' is ignored.
+// The image/license references in package/main.wxs ('$(var.JpRootDir)/package/...') are
+// relative, so they resolve to nothing and light.exe aborts with LGHT0103 - 'exited with 103
+// code'. The Windows installer therefore gets a generated main.wxs with absolute paths.
+def wixPackageDir = rootProject.file('package')
+def wixResourceDir = layout.buildDirectory.dir('wix-resources')
+
+def prepareWixResources = tasks.register('prepareWixResources') {
+    def sourceWxs = new File(wixPackageDir, 'main.wxs')
+    // WiX accepts forward slashes on Windows; backslashes are not escaped in XML attributes.
+    def packagePath = wixPackageDir.absolutePath.replace('\\', '/')
+    inputs.file(sourceWxs)
+    outputs.dir(wixResourceDir)
+    doLast {
+        File target = wixResourceDir.get().file('main.wxs').asFile
+        target.parentFile.mkdirs()
+        target.text = sourceWxs.getText('UTF-8')
+                .replace('$(var.JpRootDir)/package/', packagePath + '/')
+    }
+}
+
 runtime {
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing']
 
@@ -177,6 +200,8 @@ runtime {
             targetPlatform('win') {
                 jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
             }
+            // See prepareWixResources: WiX needs absolute paths for banner, dialog and license.
+            resourceDir = wixResourceDir.get().asFile
             installerType = 'exe'
             installerOptions += ['--name', 'autumo-UI-FX-Demo']
         }
@@ -228,4 +253,10 @@ runtime {
 // rejects that as an implicit dependency, so declare it explicitly.
 tasks.named('jpackageImage') {
     dependsOn tasks.named('runtime')
+}
+
+// ':jpackage' reads 'main.wxs' from the resource directory, so the generated copy must exist
+// before the installer is built.
+tasks.named('jpackage') {
+    dependsOn prepareWixResources
 }
