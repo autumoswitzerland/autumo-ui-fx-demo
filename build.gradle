@@ -22,9 +22,9 @@ javafx {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
+        vendor = JvmVendorSpec.AZUL
         // Azul Zulu is the JDK of choice; the foojay resolver (settings.gradle)
         // auto-provisions a Zulu JDK when no local Zulu 25 is found.
-        vendor = JvmVendorSpec.AZUL
 	}
 }
 

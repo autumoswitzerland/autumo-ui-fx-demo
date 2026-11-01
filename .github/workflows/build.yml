@@ -1,7 +1,15 @@
 name: Build
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (optional, e.g. v1.2.0). Leave empty to only build.'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -11,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-15-intel
+          - os: macos-13
             target: mac
           - os: macos-latest
             target: macArch
@@ -25,16 +33,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java (Azul Zulu 25 + JavaFX)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: '25+fx'
-
-      - name: Verify JDK
-        shell: bash
-        run: |
-          java -version
-          echo "JAVA_HOME=$JAVA_HOME"
+          java-version: '25'
+          java-package: 'jdk+fx'
 
       - name: Install WiX Toolset (Windows)
         if: runner.os == 'Windows'
@@ -61,3 +64,37 @@ jobs:
             build/jpackage/*.deb
             build/jpackage/*.rpm
           if-no-files-found: warn
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: inputs.tag != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: autumo-ui-fx-demo-*
+          merge-multiple: true
+
+      - name: List assets
+        shell: bash
+        run: find release-assets -type f
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          files: release-assets/*
+          draft: false
+          prerelease: false
+          body: |
+            ## autumo UI FX Demo ${{ inputs.tag }}
+
+            Native installers for macOS (x64/arm64), Windows and Linux.
+            The installer packages are attached below as release assets.
+            The Java runtime is bundled, no separate Java installation is required.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
