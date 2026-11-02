@@ -124,7 +124,7 @@ def jdkHomeFor(String path) {
 // The image/license references in package/main.wxs ('$(var.JpRootDir)/package/...') are
 // relative, so they resolve to nothing and light.exe aborts with LGHT0103 - 'exited with 103
 // code'. The Windows installer therefore gets a generated main.wxs with absolute paths.
-def wixPackageDir = rootProject.file('package')
+def wixPackageDir = file('package')
 def wixResourceDir = layout.buildDirectory.dir('wix-resources')
 
 def prepareWixResources = tasks.register('prepareWixResources') {
@@ -166,10 +166,9 @@ runtime {
         imageName = 'autumo UI FX Demo'
         // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
         // JavaFX 25 dropped GTK 2 and only printed a warning about it.
-        // The packaging resources (license texts for the installers) live in the root project's
-        // 'package/' directory - NOT in the 'ui' module, so rootProject.file() must be used here:
-        // file('package/') would resolve to 'ui/package', which does not exist.
-        resourceDir = rootProject.file('package')
+        // The packaging resources (license texts, icons, WiX templates) live in the project's
+        // 'package/' directory.
+        resourceDir = file('package')
 
         installerOptions = [
             '--description', 'autumo UI FX Demo',
@@ -194,6 +193,7 @@ runtime {
             }
             installerType = 'pkg'
             installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
+            installerOptions += ['--license-file', file('package/LICENSE.txt').absolutePath]
             installerOptions += ['--mac-app-category', 'Development']
         }
 
@@ -211,7 +211,7 @@ runtime {
             // jpackage silently derives 'Depends' from the build host when the custom control
             // file is missing, which produces a package that cannot be installed on other
             // distributions. Fail here instead of shipping such a package.
-            if (!rootProject.file('package/control').isFile()) {
+            if (!file('package/control').isFile()) {
                 throw new GradleException("package/control is missing. Without it jpackage derives " +
                         "the Debian 'Depends' field from the build host and the package becomes " +
                         "uninstallable on Debian/Ubuntu systems with other package names.")
@@ -288,7 +288,7 @@ tasks.named('jpackage') {
 // source of truth; if jpackage ever honours it, the values already match and nothing changes.
 def patchDebianDependencies = tasks.register('patchDebianDependencies') {
     def debDir = layout.buildDirectory.dir('jpackage')
-    def controlFile = rootProject.file('package/control')
+    def controlFile = file('package/control')
     def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
     outputs.upToDateWhen { false }
     onlyIf {

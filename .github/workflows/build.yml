@@ -95,7 +95,7 @@ jobs:
   # verifies that every shared library of the installed application resolves.
   linux-install-check:
     # Deactivated
-    if: false
+    # if: false
     name: Install check (${{ matrix.image }})
     needs: build
     runs-on: ubuntu-latest
