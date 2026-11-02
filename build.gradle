@@ -87,6 +87,7 @@ application {
     mainClass = 'ch.autumo.ui.demo.App'
 }
 
+// Allow JavaFX native access, required for interoperability with Swing/AWT on modern JDKs.
 tasks.named('run') {
     jvmArgs '--enable-native-access=javafx.graphics'
 }

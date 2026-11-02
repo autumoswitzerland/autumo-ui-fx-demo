@@ -1,3 +1,11 @@
+###############################################################################
+#
+#  autumo UI FX Demo - GitHub Build & Release Workflow
+#  Copyright: 2026 autumo GmbH
+#  Version: 1.0
+#
+###############################################################################
+
 name: Build
 
 permissions:
