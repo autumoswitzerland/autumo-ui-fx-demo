@@ -19,12 +19,13 @@ javafx {
     version = "25"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ]
 }
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.AZUL
-    }
+        // Azul Zulu is the JDK of choice; the foojay resolver (settings.gradle)
+        // auto-provisions a Zulu JDK when no local Zulu 25 is found.
+	}
 }
 
 eclipse {
@@ -48,6 +49,7 @@ jar {
     version = '1.2.0'
 }
 
+// Standalone fat jar: excludes the JavaFX/JDK classes the packaged runtime provides.
 shadowJar {
     exclude 'javax/**'
     exclude 'javafx/**'
@@ -56,22 +58,28 @@ shadowJar {
 }
 
 repositories {
+    // Vendored framework (autumo-ui-fx is not published to Maven Central):
+    // the jar + its Gradle module metadata live in lib/ (maven layout).
     maven { url = uri("$rootDir/lib") }
-    mavenLocal()
+	mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation "org.openjfx:javafx-controls:25"
-    implementation "org.openjfx:javafx-fxml:25"
-    implementation "org.openjfx:javafx-web:25"
-    implementation "org.openjfx:javafx-swing:25"
+	implementation "org.openjfx:javafx-controls:25"
+	implementation "org.openjfx:javafx-fxml:25"
+	implementation "org.openjfx:javafx-web:25"
+	implementation "org.openjfx:javafx-swing:25"
+	
     implementation "ch.autumo.commons:autumo-ui-fx:1.2.0"
-    implementation "net.synedra:validatorfx:1.0.0"
-    implementation "org.apache.logging.log4j:log4j-api:2.26.1"
-    implementation "org.apache.logging.log4j:log4j-core:2.26.1"
-    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1"
-    implementation 'org.apache.commons:commons-lang3:3.21.0'
+
+	implementation "net.synedra:validatorfx:1.0.0"
+	
+	implementation "org.apache.logging.log4j:log4j-api:2.26.1"
+	implementation "org.apache.logging.log4j:log4j-core:2.26.1"
+	implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1"
+
+	implementation 'org.apache.commons:commons-lang3:3.21.0'
     implementation 'com.google.code.gson:gson:2.11.0'
 }
 
@@ -83,8 +91,21 @@ tasks.named('run') {
     jvmArgs '--enable-native-access=javafx.graphics'
 }
 
+// Standalone fat jar: excludes the JavaFX/JDK classes the packaged runtime provides.
+shadowJar {
+    exclude 'javax/**'
+    exclude 'javafx/**'
+    exclude 'com/sun/**'
+    exclude '*.dylib'
+}
+
 def runtimeJdk = 'zulu25.36.205-ca-fx-jdk25.0.4.1'
 
+// Returns the configured local JDK if it exists (developer machines) and otherwise the JDK of
+// the Java toolchain. The toolchain JDK is also the one whose jlink creates the runtime image,
+// so both sides always share the same java.base version. Falling back to java.home is wrong:
+// the JVM that runs Gradle may be a different major version than the toolchain, which makes
+// jlink fail with "jlink version X does not match target java.base version Y".
 def jdkHomeFor(String path) {
     return providers.provider {
         if (new File(path).exists()) {
@@ -97,11 +118,18 @@ def jdkHomeFor(String path) {
     }
 }
 
+// jpackage copies only a fixed set of files into the temporary WiX config directory it uses as
+// WiX base path ('light.exe -b <configDir>'): main.wxs, overrides.wxi, msica.dll, the *.wxl
+// files and its own dialog sources. Everything else from '--resource-dir' is ignored.
+// The image/license references in package/main.wxs ('$(var.JpRootDir)/package/...') are
+// relative, so they resolve to nothing and light.exe aborts with LGHT0103 - 'exited with 103
+// code'. The Windows installer therefore gets a generated main.wxs with absolute paths.
 def wixPackageDir = file('package')
 def wixResourceDir = layout.buildDirectory.dir('wix-resources')
 
 def prepareWixResources = tasks.register('prepareWixResources') {
     def sourceWxs = new File(wixPackageDir, 'main.wxs')
+    // WiX accepts forward slashes on Windows; backslashes are not escaped in XML attributes.
     def packagePath = wixPackageDir.absolutePath.replace('\\', '/')
     inputs.file(sourceWxs)
     outputs.dir(wixResourceDir)
@@ -109,23 +137,29 @@ def prepareWixResources = tasks.register('prepareWixResources') {
         File target = wixResourceDir.get().file('main.wxs').asFile
         target.parentFile.mkdirs()
         target.text = sourceWxs.getText('UTF-8')
-            .replace('$(var.JpRootDir)/package/', packagePath + '/')
+                .replace('$(var.JpRootDir)/package/', packagePath + '/')
     }
 }
 
 runtime {
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing']
 
+    // jpackage accepts one to three dot-separated integers as the application version, so the
+    // development version's '-SNAPSHOT' qualifier (3.0.0-SNAPSHOT) is stripped for the installer.
+    // The project version itself stays untouched.
     def installerVersion = project.version.toString().replaceFirst(/(?i)-.*$/, '')
 
     jpackage {
         options = [
             '--strip-debug',
+            // 'zip-6' replaces the deprecated numeric '--compress 2' (JDK 21+).
             '--compress', 'zip-6',
             '--no-header-files',
             '--no-man-pages'
         ]
 
+        // The plugin derives --app-version from project.version (3.0.0-SNAPSHOT), which jpackage
+        // rejects. Override it with the sanitized, numeric installer version (see above).
         appVersion = installerVersion
 
         def workflowTarget = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
@@ -147,7 +181,12 @@ runtime {
                 throw new GradleException("Unknown targetPlatform: ${workflowTarget}")
         }
         targetPlatformName = beryxTarget
+                
         imageName = 'autumo UI FX Demo'
+        // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
+        // JavaFX 25 dropped GTK 2 and only printed a warning about it.
+        // The packaging resources (license texts, icons, WiX templates) live in the project's
+        // 'package/' directory.
         resourceDir = file('package')
 
         installerOptions = [
@@ -156,7 +195,7 @@ runtime {
             '--vendor', 'autumo GmbH'
         ]
 
-        if (workflowTarget == 'macos-arm64') {
+        if (targetPlatformName == 'macArch') {
             targetPlatform('macArch') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_aarch64/Contents/Home')
@@ -166,7 +205,7 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (workflowTarget == 'macos-x64') {
+        if (targetPlatformName == 'mac') {
             targetPlatform('mac') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_x64/Contents/Home')
@@ -177,43 +216,102 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (workflowTarget == 'windows-x64') {
+        if (targetPlatformName == 'win') {
             targetPlatform('win') {
                 jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
             }
+            // See prepareWixResources: WiX needs absolute paths for banner, dialog and license.
             resourceDir = wixResourceDir.get().asFile
             installerType = 'exe'
-            installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
+            installerOptions += ['--name', 'autumo-UI-FX-Demo']
         }
 
-        if (workflowTarget == 'linux-x64') {
+        if (targetPlatformName == 'linux') {
+            // jpackage silently derives 'Depends' from the build host when the custom control
+            // file is missing, which produces a package that cannot be installed on other
+            // distributions. Fail here instead of shipping such a package.
             if (!file('package/control').isFile()) {
                 throw new GradleException("package/control is missing. Without it jpackage derives " +
                         "the Debian 'Depends' field from the build host and the package becomes " +
                         "uninstallable on Debian/Ubuntu systems with other package names.")
             }
-            targetPlatform(beryxTarget) {
+            targetPlatform('linux') {
                 jdkHome = jdkHomeFor('/opt/java/' + runtimeJdk + '-linux_amd64')
             }
             installerType = 'deb'
-            installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
+            installerOptions += ['--name', 'autumo-UI-FX-Demo']
             installerOptions += ['--linux-app-category', 'Development']
             installerOptions += ['--linux-deb-maintainer', 'info@autumo.ch']
+            // 'package/control' (in the resource directory) overrides the 'Depends' field that
+            // jpackage would derive on its own: jpackage runs 'ldd' over the app image and asks
+            // the build host's package database ('dpkg -S') for the providing packages. That
+            // yields build-host package names (e.g. 'libglycin-2-0' from a recent Ubuntu), which
+            // do not exist on Debian and make the package uninstallable. The custom control file
+            // therefore lists the runtime libraries explicitly, with 'a | b' alternatives for
+            // the packages whose names differ between Debian and Ubuntu.
+        }
+
+        if (installerType == 'pkg') {
+            imageOptions += ['--icon', 'src/main/resources/icon.icns']
+            // Bundle identifier of the application itself (Info.plist), not of the installer.
+            imageOptions += ['--mac-package-identifier', 'ch.autumo.ui.demo']
+        }
+
+        if (installerType == 'exe') {
+            imageOptions += ['--icon', 'src/main/resources/icon.ico']
+            installerOptions += [
+                '--win-dir-chooser',
+                '--win-menu',
+                '--win-shortcut'
+            ]
+        }
+
+        if (installerType in ['deb', 'rpm']) {
+            imageOptions += ['--icon', 'src/main/resources/icon_256x256.png']
+            installerOptions += [
+                '--resource-dir', 'build/jpackage/autumo UI FX Demo/lib',
+                '--license-file', 'package/LICENSE.txt',
+                '--linux-menu-group', 'Utility',
+                '--linux-shortcut'
+            ]
+        }
+
+        if (installerType == 'rpm') {
+            installerOptions += [
+                '--linux-rpm-license-type', 'GPLv3'
+            ]
         }
     }
 }
 
+// ':ui:jpackageImage' consumes the jlink image that ':ui:runtime' produces (build/jre). Gradle 9
+// rejects that as an implicit dependency, so declare it explicitly.
+// The generated WiX resources must exist as well: 'resourceDir' is a declared input of
+// ':jpackageImage' (and of ':jpackage').
 tasks.named('jpackageImage') {
     dependsOn tasks.named('runtime')
     dependsOn prepareWixResources
 }
 
+// ':jpackage' reads 'main.wxs' from the resource directory, so the generated copy must exist
+// before the installer is built.
+tasks.named('jpackage') {
+    dependsOn prepareWixResources
+}
+
+// The 'Depends' field of the .deb must be identical on every build host. jpackage derives it
+// from the build machine ('ldd' + 'dpkg -S'), which yields package names that exist only on the
+// build host's distribution (e.g. 'libglycin-2-0' from a recent Ubuntu). The custom template
+// 'package/control' (picked up from the resource directory) did not take effect on the build
+// runner, so the field is set explicitly on the built package. 'package/control' stays the single
+// source of truth; if jpackage ever honours it, the values already match and nothing changes.
 def patchDebianDependencies = tasks.register('patchDebianDependencies') {
     def debDir = layout.buildDirectory.dir('jpackage')
     def controlFile = file('package/control')
     def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
     outputs.upToDateWhen { false }
     onlyIf {
+        // Only after a successful installer build, and only where jpackage can build a .deb.
         isLinux && tasks.named('jpackage').get().state.failure == null
     }
     doLast {
@@ -237,6 +335,7 @@ def patchDebianDependencies = tasks.register('patchDebianDependencies') {
                 logger.lifecycle("Replacing build-host dependencies in ${deb.name}")
                 logger.lifecycle("  was: ${lines[index]}")
                 lines[index] = depends
+                logger.lifecycle("  now: ${depends}")
             }
             control.setText(lines.join('\n') + '\n', 'UTF-8')
             runTool(['dpkg-deb', '--root-owner-group', '-b', work.absolutePath, deb.absolutePath])
@@ -245,7 +344,6 @@ def patchDebianDependencies = tasks.register('patchDebianDependencies') {
 }
 
 tasks.named('jpackage') {
-    dependsOn prepareWixResources
     finalizedBy patchDebianDependencies
 }
 
