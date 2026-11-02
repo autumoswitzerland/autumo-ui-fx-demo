@@ -162,7 +162,16 @@ runtime {
         // rejects. Override it with the sanitized, numeric installer version (see above).
         appVersion = installerVersion
 
+        // Workflow target = Dateinamen-Fragment (macos-x64, macos-arm64, windows-x64, linux-x64).
+        // Intern wird auf die beryx-targetPlatform-Namen (mac, macArch, win, linux) gemappt.
         targetPlatformName = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
+        def beryxTarget = ''
+        switch (targetPlatformName) {
+            case 'macos-x64': beryxTarget = 'mac'; break
+            case 'macos-arm64': beryxTarget = 'macArch'; break
+            case 'windows-x64': beryxTarget = 'win'; break
+            case 'linux-x64': beryxTarget = 'linux'; break
+        }
         imageName = 'autumo UI FX Demo'
         // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
         // JavaFX 25 dropped GTK 2 and only printed a warning about it.
@@ -177,7 +186,7 @@ runtime {
         ]
 
         if (targetPlatformName == 'macos-arm64') {
-            targetPlatform('macArch') {
+            targetPlatform(beryxTarget) {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_aarch64/Contents/Home')
             }
@@ -187,7 +196,7 @@ runtime {
         }
 
         if (targetPlatformName == 'macos-x64') {
-            targetPlatform('mac') {
+            targetPlatform(beryxTarget) {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_x64/Contents/Home')
             }
@@ -198,13 +207,13 @@ runtime {
         }
 
         if (targetPlatformName == 'windows-x64') {
-            targetPlatform('win') {
+            targetPlatform(beryxTarget) {
                 jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
             }
             // See prepareWixResources: WiX needs absolute paths for banner, dialog and license.
             resourceDir = wixResourceDir.get().asFile
             installerType = 'exe'
-            installerOptions += ['--name', 'autumo-UI-FX-Demo']
+            installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
         }
 
         if (targetPlatformName == 'linux-x64') {
@@ -216,11 +225,11 @@ runtime {
                         "the Debian 'Depends' field from the build host and the package becomes " +
                         "uninstallable on Debian/Ubuntu systems with other package names.")
             }
-            targetPlatform('linux') {
+            targetPlatform(beryxTarget) {
                 jdkHome = jdkHomeFor('/opt/java/' + runtimeJdk + '-linux_amd64')
             }
             installerType = 'deb'
-            installerOptions += ['--name', 'autumo-UI-FX-Demo']
+            installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
             installerOptions += ['--linux-app-category', 'Development']
             installerOptions += ['--linux-deb-maintainer', 'info@autumo.ch']
             // 'package/control' (in the resource directory) overrides the 'Depends' field that
