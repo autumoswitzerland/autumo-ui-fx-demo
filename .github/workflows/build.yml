@@ -61,7 +61,7 @@ jobs:
           ./gradlew jpackage -PtargetPlatform=${{ matrix.target }} --no-daemon
 
       - name: Verify Debian dependencies (Linux)
-        if: matrix.target == 'linux'
+        if: matrix.target == 'linux-x64'
         shell: bash
         run: |
           # The package must carry the Depends line from package/control, not one derived from
@@ -109,7 +109,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: autumo-ui-fx-demo-linux
+          name: autumo-ui-fx-demo-linux-x64
           path: pkg
 
       - name: Install in ${{ matrix.image }} and verify libraries
