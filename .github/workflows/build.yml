@@ -20,13 +20,13 @@ jobs:
       matrix:
         include:
           - os: macos-15-intel
-            target: mac
+            target: macos-x64
           - os: macos-latest
-            target: macArch
+            target: macos-arm64
           - os: windows-latest
-            target: win
+            target: windows-x64
           - os: ubuntu-latest
-            target: linux
+            target: linux-x64
 
     steps:
       - name: Checkout

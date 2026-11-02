@@ -162,7 +162,7 @@ runtime {
         // rejects. Override it with the sanitized, numeric installer version (see above).
         appVersion = installerVersion
 
-        targetPlatformName = (project.findProperty('targetPlatform') ?: 'mac').toString()
+        targetPlatformName = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
         imageName = 'autumo UI FX Demo'
         // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
         // JavaFX 25 dropped GTK 2 and only printed a warning about it.
@@ -176,7 +176,7 @@ runtime {
             '--vendor', 'autumo GmbH'
         ]
 
-        if (targetPlatformName == 'macArch') {
+        if (targetPlatformName == 'macos-arm64') {
             targetPlatform('macArch') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_aarch64/Contents/Home')
@@ -186,7 +186,7 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (targetPlatformName == 'mac') {
+        if (targetPlatformName == 'macos-x64') {
             targetPlatform('mac') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_x64/Contents/Home')
@@ -197,7 +197,7 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (targetPlatformName == 'win') {
+        if (targetPlatformName == 'windows-x64') {
             targetPlatform('win') {
                 jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
             }
@@ -207,7 +207,7 @@ runtime {
             installerOptions += ['--name', 'autumo-UI-FX-Demo']
         }
 
-        if (targetPlatformName == 'linux') {
+        if (targetPlatformName == 'linux-x64') {
             // jpackage silently derives 'Depends' from the build host when the custom control
             // file is missing, which produces a package that cannot be installed on other
             // distributions. Fail here instead of shipping such a package.
