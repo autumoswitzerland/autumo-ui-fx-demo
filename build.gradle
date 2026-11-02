@@ -166,11 +166,17 @@ runtime {
         // Intern wird auf die beryx-targetPlatform-Namen (mac, macArch, win, linux) gemappt,
         // weil beryx targetPlatformName gegen die targetPlatform(...) Blöcke prüft.
         def workflowTarget = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
-        def beryxTarget = switch (workflowTarget) {
-            'macos-x64'    -> 'mac'
-            'macos-arm64'  -> 'macArch'
-            'windows-x64'  -> 'win'
-            'linux-x64'    -> 'linux'
+        def beryxTarget
+        if (workflowTarget == 'macos-x64') {
+            beryxTarget = 'mac'
+        } else if (workflowTarget == 'macos-arm64') {
+            beryxTarget = 'macArch'
+        } else if (workflowTarget == 'windows-x64') {
+            beryxTarget = 'win'
+        } else if (workflowTarget == 'linux-x64') {
+            beryxTarget = 'linux'
+        } else {
+            throw new GradleException("Unknown targetPlatform: ${workflowTarget}")
         }
         targetPlatformName = beryxTarget
         imageName = 'autumo UI FX Demo'
