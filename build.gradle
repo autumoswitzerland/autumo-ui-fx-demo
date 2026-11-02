@@ -163,15 +163,16 @@ runtime {
         appVersion = installerVersion
 
         // Workflow target = Dateinamen-Fragment (macos-x64, macos-arm64, windows-x64, linux-x64).
-        // Intern wird auf die beryx-targetPlatform-Namen (mac, macArch, win, linux) gemappt.
-        targetPlatformName = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
-        def beryxTarget = ''
-        switch (targetPlatformName) {
-            case 'macos-x64': beryxTarget = 'mac'; break
-            case 'macos-arm64': beryxTarget = 'macArch'; break
-            case 'windows-x64': beryxTarget = 'win'; break
-            case 'linux-x64': beryxTarget = 'linux'; break
+        // Intern wird auf die beryx-targetPlatform-Namen (mac, macArch, win, linux) gemappt,
+        // weil beryx targetPlatformName gegen die targetPlatform(...) Blöcke prüft.
+        def workflowTarget = (project.findProperty('targetPlatform') ?: 'macos-x64').toString()
+        def beryxTarget = switch (workflowTarget) {
+            case 'macos-x64': 'mac'; break
+            case 'macos-arm64': 'macArch'; break
+            case 'windows-x64': 'win'; break
+            case 'linux-x64': 'linux'; break
         }
+        targetPlatformName = beryxTarget
         imageName = 'autumo UI FX Demo'
         // 'jvmArgs' intentionally not set: the former '-Djdk.gtk.version=2' is pointless since
         // JavaFX 25 dropped GTK 2 and only printed a warning about it.
@@ -185,8 +186,8 @@ runtime {
             '--vendor', 'autumo GmbH'
         ]
 
-        if (targetPlatformName == 'macos-arm64') {
-            targetPlatform(beryxTarget) {
+        if (workflowTarget == 'macos-arm64') {
+            targetPlatform('macArch') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_aarch64/Contents/Home')
             }
@@ -195,8 +196,8 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (targetPlatformName == 'macos-x64') {
-            targetPlatform(beryxTarget) {
+        if (workflowTarget == 'macos-x64') {
+            targetPlatform('mac') {
                 jdkHome = jdkHomeFor('/Volumes/Fastdrive/Development/JDKs/Azul/mac/' +
                         runtimeJdk + '-macosx_x64/Contents/Home')
             }
@@ -206,8 +207,8 @@ runtime {
             installerOptions += ['--mac-app-category', 'Development']
         }
 
-        if (targetPlatformName == 'windows-x64') {
-            targetPlatform(beryxTarget) {
+        if (workflowTarget == 'windows-x64') {
+            targetPlatform('win') {
                 jdkHome = jdkHomeFor('G:/Java/JDKs/Azul/' + runtimeJdk + '-win_x64')
             }
             // See prepareWixResources: WiX needs absolute paths for banner, dialog and license.
@@ -216,7 +217,7 @@ runtime {
             installerOptions += ['--name', 'autumo-UI-FX-Demo-x64']
         }
 
-        if (targetPlatformName == 'linux-x64') {
+        if (workflowTarget == 'linux-x64') {
             // jpackage silently derives 'Depends' from the build host when the custom control
             // file is missing, which produces a package that cannot be installed on other
             // distributions. Fail here instead of shipping such a package.
