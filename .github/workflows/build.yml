@@ -187,7 +187,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
-          name: ${{ inputs.tag }}
+          name: autumo UI FX Demo ${{ inputs.tag }}
           files: release-assets/*
           draft: false
           prerelease: false
