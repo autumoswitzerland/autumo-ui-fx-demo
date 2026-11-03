@@ -58,9 +58,6 @@ shadowJar {
 }
 
 repositories {
-    // Vendored framework (autumo-ui-fx is not published to Maven Central):
-    // the jar + its Gradle module metadata live in lib/ (maven layout).
-    maven { url = uri("$rootDir/lib") }
 	mavenLocal()
     mavenCentral()
 }
