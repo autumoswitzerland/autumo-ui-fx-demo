@@ -9,7 +9,7 @@
 
 This project demonstrates a sample JavaFX application built with the **autumo UI FX** framework, an open-source framework for rapid JavaFX application development.
 
-A separate **Pro version** of the framework is also available. It can be integrated into application licensing platforms and provides an extended set of components and tools for general-purpose JavaFX desktop application development.
+A separate **commercial version** of the framework is also available. It can be integrated into application licensing platforms and provides an extended set of components and tools for general-purpose JavaFX desktop application development.
 
 The **autumo UI FX** framework is available here:
 
