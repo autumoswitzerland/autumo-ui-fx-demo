@@ -2,7 +2,7 @@
   <img class="logo" src="etc/autumo-ui-fx-logo.png" alt="autumo UI FX logo" width="256" />
 </p>
 
-<h1 align="center" style="font-size: 3.5em; margin: 0">autumo UI FX</h1>
+<h1 align="center" style="font-size: 3.5em; margin: 0">autumo UI FX Demo</h1>
 <br />
 
 ## autumo UI FX Demo
