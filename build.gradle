@@ -63,24 +63,20 @@ repositories {
 }
 
 dependencies {
+ 	// autumo UI FX
     implementation "ch.autumo.commons:autumo-ui-fx:1.2.0"
 	
+	// Logging is directly used
 	implementation "org.apache.logging.log4j:log4j-api:2.26.1"
 	implementation "org.apache.logging.log4j:log4j-core:2.26.1"
 	implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1"
-
-    // JSON pretty-printing for the JSON formatter pane.
-    implementation 'com.google.code.gson:gson:2.11.0'
-    
-	implementation 'org.apache.commons:commons-lang3:3.21.0'
-	implementation "net.synedra:validatorfx:1.0.0"
 }
 
 application {
     mainClass = 'ch.autumo.ui.demo.App'
 }
 
-// Allow JavaFX native access, required for interoperability with Swing/AWT on modern JDKs.
+// Allow JavaFX native access required for SwingNode interoperability with Swing/AWT on modern JDKs.
 tasks.named('run') {
     jvmArgs '--enable-native-access=javafx.graphics'
 }
